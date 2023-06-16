@@ -1,7 +1,7 @@
 const {DataTypes} = require("sequelize")
 const sequelize = require("../helpers/bd")
 
-const AdmModel = sequelize.define('Administradores', 
+const userModel = sequelize.define('Usuarios', 
     {   
         id: {
             type: DataTypes.INTEGER,
@@ -11,6 +11,7 @@ const AdmModel = sequelize.define('Administradores',
         nome: DataTypes.STRING,
         idade: DataTypes.INTEGER,
         cpf: DataTypes.STRING,
+        cidade: DataTypes.STRING,
         usuario: DataTypes.STRING,
         senha: DataTypes.STRING
     }
@@ -19,44 +20,40 @@ const AdmModel = sequelize.define('Administradores',
 
 module.exports = {
     list: async function() {
-        const adm = await AdmModel.findAll()
-        return adm;
+        const user = await userModel.findAll()
+        return user;
     },
 
-    save: async function(nome, idade, cpf, usuario, senha){
-        const adm = await AdmModel.create({
+    save: async function(nome, idade, cpf, cidade, usuario, senha){
+        const user = await userModel.create({
             nome: nome,
             idade: idade,
-            cpf:cpf,
+            cpf: cpf,
+            cidade: cidade,
             usuario: usuario,
             senha: senha
         })
-        return adm;
+        return user;
     },
 
-    update: async function(id, obj){
-        let adm = await AdmModel.findByPk(id)
-        if(!adm) {
-            return false
-        }
-
-        Object.keys(id).forEach(key => adm[key] = obh[key])
-        await adm.save()
-        return adm;
+    update: async function(id, nome, idade, cpf, cidade, usuario, senha) {
+        return await userModel.update({nome: nome, idade: idade, cpf: cpf, cidade: cidade, usuario: usuario, senha: senha}, {
+            where: { id: id }
+        })
     },
 
     delete: async function(id) {
-        const adm = await AdmModel.findByPk(id)
-        return adm.destroy()
+        const user = await userModel.findByPk(id)
+        return user.destroy()
     },
 
     getById: async function(id) {
-        return await AdmModel.findByPk(id);
+        return await userModel.findByPk(id);
     },
 
     consultaLogin: async function(usuario, senha) {
         try {
-            const adms = await AdmModel.findAll({
+            const adms = await userModel.findAll({
                 where: {
                 usuario: usuario,
                 senha: senha
@@ -69,7 +66,7 @@ module.exports = {
         }
     },
 
-    Model: AdmModel,
+    Model: userModel,
 }
 
 

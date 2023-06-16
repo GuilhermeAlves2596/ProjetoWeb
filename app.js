@@ -17,11 +17,13 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-var indexRouter = require('./routes/index');
-var apiLogin = require('./routes/login')
+// var indexRouter = require('./routes/usuarios');
+var apiADM = require('./routes/adm')
+var apiUsuarios = require('./routes/usuarios')
 
-app.use('/', indexRouter);
+// app.use('/', indexRouter);
 app.use('/install', require('./control/InstallAPI'))
-app.use('/api/login', apiLogin);
+app.use('/api/adm', apiADM);
+app.use('/api/usuario', apiUsuarios)
 
 module.exports = app;
