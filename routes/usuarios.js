@@ -3,20 +3,18 @@ var router = express.Router();
 var jwt = require('jsonwebtoken');
 const { token } = require('morgan');
 const sequelize = require("../helpers/bd")
-var admDAO = require("../model/ADM");
 var userDAO = require("../model/usuarios");
-
-
+var funcoes = require('../control/funcoes')
 
 // Login usuario
-router.post('/login', async function(req, res) {
+router.post('/login', funcoes.validateLogin, async (req, res) => {
     const {user, password} = req.body
 
     const usuario = await userDAO.consultaLogin(user, password)
 
     if(usuario.length > 0){
         let token = jwt.sign({user: user}, '#Abcdefg', {
-            expiresIn: '20 min'
+            expiresIn: '1h'
         })
         res.json({status: true, token: token, msg:'Login efetuado com sucesso'})
     } else {
@@ -25,9 +23,8 @@ router.post('/login', async function(req, res) {
 })
 
 // Cadastro de usuarios
-router.post('/cadUsuario', validateToken, async (req, res) => {
-    await sequelize.sync()
-
+router.post('/cadUsuario', funcoes.validateToken, funcoes.validateUsuario, async (req, res) => {
+    
     const {nome, idade, cpf, cidade, usuario, senha} = req.body
 
     userDAO.save(nome, idade, cpf, cidade, usuario, senha).then(user => {
@@ -39,7 +36,7 @@ router.post('/cadUsuario', validateToken, async (req, res) => {
 })
 
 // Alterar os proprios dados
-router.put("/altDados/:id", async (req, res) => {
+router.put("/altDados/:id", funcoes.validateToken, funcoes.validateUsuario, funcoes.validateAltUser, async (req, res) => {
     const userId = req.params.id;
     const { user } = req.body;
   
@@ -60,24 +57,7 @@ router.put("/altDados/:id", async (req, res) => {
     } else {
       res.status(500).json({ status: false, msg: 'Você não tem permissão para alterar esses dados' });
     }
-  });
+});
   
-
-
-function validateToken(req, res, next) {
-    let token_full = req.headers['authorization']
-    if (!token_full)
-      token_full = ''
-    
-    jwt.verify(token_full, '#Abcdefg', (err, payload) => {
-      if (err) {
-        res.status(403).json({status: false, msg: "Acesso negado - Token invalido"})
-        return
-      }
-      req.user = payload.user
-      next()
-    })
-}
-
 
 module.exports = router;

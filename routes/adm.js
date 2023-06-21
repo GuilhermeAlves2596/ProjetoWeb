@@ -5,16 +5,45 @@ var admDAO = require("../model/ADM");
 var userDAO = require("../model/usuarios");
 const sequelize = require('../helpers/bd');
 var router = express.Router();
+var funcoes = require('../control/funcoes')
+
+// Listar ADM's
+router.get('/listAll', funcoes.validateToken, funcoes.validateLogin, async (req, res) => {
+    const {user, password} = req.body
+    const adm = await admDAO.consultaLogin(user, password)
+
+    if(adm.length > 0){
+        const adms = await admDAO.list();
+        res.json({status: true, msg: "ADM's cadastrados", adms })
+    } else {
+        res.status(403).json({status: false, msg: 'Você não possui acesso ADM'})
+    }
+
+})
+
+// Listar usuarios
+router.get('/listUsers', funcoes.validateToken, funcoes.validateLogin, async (req, res) => {
+    const {user, password} = req.body
+
+    const adm = await admDAO.consultaLogin(user, password)
+    if(adm.length > 0){
+        const usuarios = await userDAO.list();
+        res.json({status: true, msg: "Usuarios cadastrados", usuarios})
+    } else {
+        res.status(403).json({status: false, msg: 'Você não possui acesso ADM'})
+    }
+})
+
 
 // Login ADM 
-router.post('/login', async function(req, res) {
+router.post('/login', funcoes.validateLogin, async (req, res) => {
     const {user, password} = req.body
 
     const adm = await admDAO.consultaLogin(user, password)
 
     if(adm.length > 0){
         let token = jwt.sign({user: user}, '#Abcdefg', {
-            expiresIn: '20 min'
+            expiresIn: '1h'
         })
         res.json({status: true, token: token, msg:'Login efetuado com sucesso'})
     } else {
@@ -23,7 +52,7 @@ router.post('/login', async function(req, res) {
 })
 
 // Cadastro de novos ADM's
-router.post('/cadAdm', validateToken, async(req, res) => {
+router.post('/cadAdm', funcoes.validateToken, funcoes.validateLogin, funcoes.validateADM, async(req, res) => {
 
     const {user, password} = req.body
 
@@ -46,7 +75,7 @@ router.post('/cadAdm', validateToken, async(req, res) => {
 
 
 // Cadastro de novos usuarios
-router.post('/cadUsuario', validateToken, async (req, res) => {
+router.post('/cadUsuario', funcoes.validateToken, funcoes.validateUsuario, async (req, res) => {
     await sequelize.sync()
 
     const {nome, idade, cpf, cidade, usuario, senha} = req.body
@@ -61,60 +90,53 @@ router.post('/cadUsuario', validateToken, async (req, res) => {
 
 
 // Alterar usuarios (apenas adm)
-router.put("/altUsuario/:id", async (req, res) => {
+router.put("/altUsuario/:id", funcoes.validateToken, funcoes.validateUsuario, funcoes.validateLogin, async (req, res) => {
 
     const {user, password} = req.body
     const adm = await admDAO.consultaLogin(user, password)
 
-    if(adm.length > 0){
-        const {id} = req.params
-        const {nome, idade, cpf, cidade, usuario, senha} = req.body
-    
-        let [result] = await userDAO.update(id, nome, idade, cpf, cidade, usuario, senha)
-        console.log(result)
-        if (result)
-            res.json({status: true, msg:'Usuario alterado com sucesso'})
-        else
-            res.status(403).json({status: false, msg: 'Falha ao alterar o usuario'})
-    } else {
-        res.status(500).json({status: false, msg: 'Você não possui acesso ADM'})
+    try {
+        if(adm.length > 0){
+            const {id} = req.params
+            const {nome, idade, cpf, cidade, usuario, senha} = req.body
+        
+            let [result] = await userDAO.update(id, nome, idade, cpf, cidade, usuario, senha)
+            console.log(result)
+            if (result)
+                res.json({status: true, msg:'Usuario alterado com sucesso'})
+            else
+                res.status(403).json({status: false, msg: 'Falha ao alterar o usuario'})
+        } else {
+            res.status(500).json({status: false, msg: 'Você não possui acesso ADM'})
+        }
+    } catch (error) {
+        res.status(500).json({status: false, msg: 'Usuário não encontrado'})
     }
+
 })
 
 // Exclusão de usuario não ADM
-router.delete("/deleteUser/:id", validateToken, async (req, res) => {
+router.delete("/deleteUser/:id", funcoes.validateToken, funcoes.validateLogin, async (req, res) => {
 
     const {user, password} = req.body
     const adm = await admDAO.consultaLogin(user, password)
 
-    if(adm.length > 0){
-        let usuario = await userDAO.delete(req.params.id)
-        if(usuario){
-            res.json({status: true, msg:'Usuario excluido com sucesso'})
+    try {
+        if(adm.length > 0){
+            let usuario = await userDAO.delete(req.params.id)
+            if(usuario){
+                res.json({status: true, msg:'Usuário excluido com sucesso'})
+            } else {
+                res.status(403).json({status: false, msg: 'Erro ao excluir o usuário'})
+            }
         } else {
-            res.status(403).json({status: false, msg: 'Usuario não encontrado'})
-        }
-    } else {
-        res.status(500).json({status: false, msg: 'Você não possui acesso ADM'})
+            res.status(500).json({status: false, msg: 'Você não possui acesso ADM'})
+        }       
+    } catch (error) {
+        res.status(500).json({status: false, msg: 'Usuário não encontrado'})
     }
+
 })
-
-
-// Validação do token
-function validateToken(req, res, next) {
-    let token_full = req.headers['authorization']
-    if (!token_full)
-      token_full = ''
-  
-    jwt.verify(token_full, '#Abcdefg', (err, payload) => {
-      if (err) {
-        res.status(403).json({status: false, msg: "Acesso negado - Token invalido"})
-        return
-      }
-      req.user = payload.user
-      next()
-    })
-}
 
 
 module.exports = router;
