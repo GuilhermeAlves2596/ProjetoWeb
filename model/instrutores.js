@@ -20,14 +20,21 @@ const instrutorModel = sequelize.define('Intrutores',
 )
 
 module.exports = {
-    list: async function() {
-        const instrutor = await instrutorModel.findAll()
+    list: async function(page, limit) {
+        const offset = (page - 1) * limit; // Calcular o deslocamento (offset) com base na página e no limite
+        const instrutor = await instrutorModel.findAll({
+            offset, 
+            limit,
+        })
         return instrutor;
     },
 
-    listUser: async function() {
+    listUser: async function(page, limit) {
+        const offset = (page - 1) * limit; // Calcular o deslocamento (offset) com base na página e no limite
         const instrutor = await instrutorModel.findAll({
             attributes: { exclude: ['salario'] }, // Excluir o campo "salario" para consultas por usuarios comuns
+            offset,
+            limit,
         })
         return instrutor;
     },
@@ -73,9 +80,11 @@ module.exports = {
     },
 
     getEspecialidade: async function(especialidade) {
-        return await instrutorModel.findOne({where: {especialidade: {
+        return await instrutorModel.findAll({where: {especialidade: {
             [Op.like]: '%' + especialidade + '%'
-        } }})
+        } },
+        attributes: { exclude: ['salario', 'endereco', 'idade', 'genero','updatedAt','createdAt'] }
+        })
     },
     
     Model: instrutorModel

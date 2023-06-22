@@ -19,9 +19,13 @@ const userModel = sequelize.define('Usuarios',
 )
 
 module.exports = {
-    list: async function() {
-        const user = await userModel.findAll()
-        return user;
+    list: async function(page, limit) {
+        const offset = (page - 1) * limit; // Calcular o deslocamento (offset) com base na página e no limite
+        const users = await userModel.findAll({
+            offset,
+            limit,
+        });
+        return users;
     },
 
     save: async function(nome, idade, cpf, cidade, usuario, senha){

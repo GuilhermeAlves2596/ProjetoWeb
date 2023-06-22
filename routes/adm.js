@@ -8,12 +8,15 @@ var router = express.Router();
 var funcoes = require('../control/funcoes')
 
 // Listar ADM's
-router.get('/listAll', funcoes.validateToken, funcoes.validateLogin, async (req, res) => {
+router.get('/listAll', funcoes.validateToken, funcoes.validateLogin, funcoes.limiteList, async (req, res) => {
     const {user, password} = req.body
     const adm = await admDAO.consultaLogin(user, password)
 
     if(adm.length > 0){
-        const adms = await admDAO.list();
+        const page = parseInt(req.query.page);
+        let limit = parseInt(req.query.limit);
+
+        const adms = await admDAO.list(page, limit);
         res.json({status: true, msg: "ADM's cadastrados", adms })
     } else {
         res.status(403).json({status: false, msg: 'Você não possui acesso ADM'})
@@ -22,17 +25,20 @@ router.get('/listAll', funcoes.validateToken, funcoes.validateLogin, async (req,
 })
 
 // Listar usuarios
-router.get('/listUsers', funcoes.validateToken, funcoes.validateLogin, async (req, res) => {
-    const {user, password} = req.body
+router.get('/listUsers', funcoes.validateToken, funcoes.validateLogin, funcoes.limiteList, async (req, res) => {
+    const { user, password } = req.body;
+    const adm = await admDAO.consultaLogin(user, password);
 
-    const adm = await admDAO.consultaLogin(user, password)
-    if(adm.length > 0){
-        const usuarios = await userDAO.list();
-        res.json({status: true, msg: "Usuarios cadastrados", usuarios})
+    if (adm.length > 0) {
+        const page = parseInt(req.query.page);
+        let limit = parseInt(req.query.limit);
+
+        const users = await userDAO.list(page, limit);
+        res.json({ status: true, msg: "Usuários cadastrados", users });
     } else {
-        res.status(403).json({status: false, msg: 'Você não possui acesso ADM'})
+        res.status(403).json({ status: false, msg: 'Você não possui acesso ADM' });
     }
-})
+});
 
 
 // Login ADM 

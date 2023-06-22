@@ -18,8 +18,12 @@ const AdmModel = sequelize.define('Administradores',
 )
 
 module.exports = {
-    list: async function() {
-        const adm = await AdmModel.findAll()
+    list: async function(page, limit) {
+        const offset = (page - 1) * limit; // Calcular o deslocamento (offset) com base na página e no limite
+        const adm = await AdmModel.findAll({
+            offset,
+            limit,
+        })
         return adm;
     },
 

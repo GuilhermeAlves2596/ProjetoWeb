@@ -8,8 +8,11 @@ const aulaDAO = require('../model/aulas')
 var admDAO = require("../model/ADM");
 
 // Listar aulas disponiveis
-router.get('/listAll', funcoes.validateToken, async (req, res) => {
-    let aulas = await aulaDAO.list();
+router.get('/listAll', funcoes.validateToken, funcoes.limiteList, async (req, res) => {
+    const page = parseInt(req.query.page);
+    let limit = parseInt(req.query.limit);
+
+    let aulas = await aulaDAO.list(page, limit);
     res.json({status: true, msg:'Aulas disponiveis', aulas})
 })
 

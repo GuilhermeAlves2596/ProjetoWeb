@@ -5,10 +5,14 @@ const { token } = require('morgan');
 const sequelize = require("../helpers/bd")
 var funcoes = require('../control/funcoes')
 const alunosDAO = require('../model/alunos')
+const instrutorDAO = require('../model/instrutores')
 
 // Listar alunos cadastrados
-router.get('/listAll', funcoes.validateToken, async (req, res) => {
-    let alunos = await alunosDAO.list();
+router.get('/listAll', funcoes.validateToken, funcoes.limiteList, async (req, res) => {
+    const page = parseInt(req.query.page);
+    let limit = parseInt(req.query.limit);
+
+    let alunos = await alunosDAO.list(page, limit);
     res.json({status: true, msg: 'Alunos cadastrados', alunos})
 })
 
@@ -63,5 +67,47 @@ router.delete('/delete/:id', funcoes.validateToken, async (req, res) => {
     }
 
 })
+
+// Lógica de negócio - Calculo de IMC
+router.get('/imc/:id', funcoes.validateToken, async (req, res) => {
+
+    try {
+        let aluno = await alunosDAO.getById(req.params.id)
+        let idade = aluno.idade;
+        let peso = aluno.peso;
+        let altura = aluno.altura;
+        let nome = aluno.nome
+        const calculoIMC = funcoes.calculoIMC(peso,altura);
+        let profissional;
+        let profissional2;
+        
+        if(calculoIMC < 18.5){
+            profissional = await instrutorDAO.getEspecialidade('Nutricionista');
+            return res.json({status: true,nome, idade, altura, peso, IMC:'Seu IMC é: '+calculoIMC+'Kg/m²', 
+                                msg: 'Classificação MAGREZA, procure um de nossos profissionais para definir uma dieta de ganho de peso', 
+                                profissional})
+        } else if(18.5 <= calculoIMC && calculoIMC < 24.9) {
+            profissional = await instrutorDAO.getEspecialidade('Musculação');
+            return res.json({status: true,nome, idade, altura, peso, IMC:'Seu IMC é: '+calculoIMC+'Kg/m²', 
+                                msg: 'Classificação NORMAL, parabens, seu peso está normal, caso queira ganhar massa, aqui estão alguns de nossos profissionais especializados', 
+                                profissional})        
+        } else if(24.9 <= calculoIMC && calculoIMC <= 29.9){
+            profissional = await instrutorDAO.getEspecialidade('Emagrecimento');
+            return res.json({status: true,nome, idade, altura, peso, IMC:'Seu IMC é: '+calculoIMC+'Kg/m²', 
+                                msg: 'Classificação SOBREPESO, cuidado, seu peso está acima do normal, procure um profissional para definir rotinas de emagrecimento', 
+                                profissional})          
+        } else if(calculoIMC >= 30){
+            profissional = await instrutorDAO.getEspecialidade('Emagrecimento');
+            profissional2 = await instrutorDAO.getEspecialidade('Nutricionista');
+            return res.json({status: true,nome, idade, altura, peso, IMC:'Seu IMC é: '+calculoIMC+'Kg/m²', 
+                                msg: 'Classificação OBESIDADE GRAU I, muito cuidado, seu peso está muito acima do normal, procure um profissional para definir rotinas de emagrecimento e um nutricionista', 
+                                profissional, profissional2})          
+        }        
+    } catch (error) {
+        return res.status(500).json({status: false, msg:'Aluno não encontrado'})        
+    }
+
+})
+
 
 module.exports = router;

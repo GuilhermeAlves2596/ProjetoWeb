@@ -19,8 +19,12 @@ const alunoModel = sequelize.define('Alunos',
 )
 
 module.exports = {
-    list: async function() {
-        const aluno = await alunoModel.findAll()
+    list: async function(page, limit) {
+        const offset = (page - 1) * limit; // Calcular o deslocamento (offset) com base na página e no limite
+        const aluno = await alunoModel.findAll({
+            offset,
+            limit,
+        })
         return aluno;
     },
 

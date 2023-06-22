@@ -8,16 +8,18 @@ const instrutorDAO = require('../model/instrutores')
 var admDAO = require("../model/ADM");
 
 // Listar instrutores disponiveis
-router.get('/listAll', funcoes.validateToken, funcoes.validateLogin, async (req, res) => {
+router.get('/listAll', funcoes.validateToken, funcoes.validateLogin, funcoes.limiteList, async (req, res) => {
     const {user, password} = req.body
     const adm = await admDAO.consultaLogin(user, password)
     let instrutores;
+    const page = parseInt(req.query.page);
+    let limit = parseInt(req.query.limit);
 
     if(adm.length > 0){
-        instrutores = await instrutorDAO.list();
+        instrutores = await instrutorDAO.list(page, limit);
         res.json({status: true, msg:'Instrutores cadastrados', instrutores})
     } else {
-        instrutores = await instrutorDAO.listUser(); // Se realizer o login com usuario, não irá aparecer o salário do instrutor
+        instrutores = await instrutorDAO.listUser(page, limit); // Se realizer o login com usuario, não irá aparecer o salário do instrutor
         res.json({status: true, msg:'Instrutores cadastrados', instrutores})
     }
 })

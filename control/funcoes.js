@@ -31,6 +31,16 @@ module.exports = {
     }
     next();
   },
+   // Verificar se o limite está entre os valores permitidos
+  limiteList(req, res, next){
+    let limit = parseInt(req.query.limit);
+
+    if (limit !== 5 && limit !== 10 && limit !== 30) {
+        res.status(403).json({ status: false, msg: 'O limite de usuarios por pagina deve ser 5,10 ou 30. Ex:/listAll?page=2&limit=5'});
+        return;
+    }
+    next();
+  },
 
 // Funções ADM
     validateADM(req, res, next) {
@@ -103,5 +113,12 @@ module.exports = {
             return;  
         }
         next();
+    },
+// Função calculo IMC
+    calculoIMC(peso, altura){
+        var alturaEmMetro = altura / 100;
+        const imc = peso / (alturaEmMetro * alturaEmMetro)
+
+        return imc.toFixed(1);
     }
 };

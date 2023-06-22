@@ -23,8 +23,8 @@ instrutor.Model.hasMany(aulaModel, {foreignKey: 'nome', as: 'aulas'})
 
 
 module.exports = {
-    list: async function() {
-        
+    list: async function(page, limit) {
+        const offset = (page - 1) * limit; // Calcular o deslocamento (offset) com base na página e no limite
         const aula = await aulaModel.findAll({ 
             include: [
                 {
@@ -34,6 +34,8 @@ module.exports = {
                 }
             ],
             attributes: { exclude: ['nome'] }, // Excluir o campo "nome"
+            offset,
+            limit, 
         });
 
         return aula;

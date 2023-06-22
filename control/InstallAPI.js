@@ -30,26 +30,29 @@ router.get('/', async (req, res) => {
     
     // Popular tabela Alunos
     let aluno1 = await alunoModel.save('Pedro', 20, 'Masculino', 'Rua Sem Saida', 190, 90);
-    let aluno2 = await alunoModel.save('Bia', 35, 'Feminino', 'Rua Com Saida', 160, 55);
+    let aluno2 = await alunoModel.save('Bia', 35, 'Feminino', 'Rua Com Saida', 160, 70);
     let aluno3 = await alunoModel.save('Maria', 18, 'Feminino', 'Avenida Principal', 170, 60);
-    let aluno4 = await alunoModel.save('João', 22, 'Masculino', 'Rua das Flores', 180, 75);
-    let aluno5 = await alunoModel.save('Ana', 19, 'Feminino', 'Rua dos Sonhos', 165, 55);
-    let aluno6 = await alunoModel.save('Luiz', 21, 'Masculino', 'Avenida Central', 175, 70);
-    let aluno7 = await alunoModel.save('Carla', 20, 'Feminino', 'Rua dos Passarinhos', 160, 50);
-    let aluno8 = await alunoModel.save('Miguel', 23, 'Masculino', 'Avenida das Palmeiras', 185, 80);
-    let aluno9 = await alunoModel.save('Isabela', 19, 'Feminino', 'Rua dos Amores', 175, 65);
-    let aluno10 = await alunoModel.save('Gabriel', 22, 'Masculino', 'Avenida dos Esportes', 180, 75);
+    let aluno4 = await alunoModel.save('João', 22, 'Masculino', 'Rua das Flores', 180, 95);
+    let aluno5 = await alunoModel.save('Ana', 19, 'Feminino', 'Rua dos Sonhos', 165, 50);
+    let aluno6 = await alunoModel.save('Luiz', 21, 'Masculino', 'Avenida Central', 175, 84);
+    let aluno7 = await alunoModel.save('Carla', 20, 'Feminino', 'Rua dos Passarinhos', 160, 78);
+    let aluno8 = await alunoModel.save('Miguel', 23, 'Masculino', 'Avenida das Palmeiras', 185, 110);
+    let aluno9 = await alunoModel.save('Isabela', 19, 'Feminino', 'Rua dos Amores', 175, 90);
+    let aluno10 = await alunoModel.save('Gabriel', 22, 'Masculino', 'Avenida dos Esportes', 180, 63);
 
     let alunos = [aluno1, aluno2, aluno3, aluno4, aluno5, aluno6, aluno7, aluno8, aluno9, aluno10]
 
     // Popular tabela Instrutores
     let instrutor1 = await intrutorModel.save('Joao', 40, 'Masculino', 'AV XV de novembro', true, 3500,"Musculação")
     let instrutor2 = await intrutorModel.save('Jose', 45, 'Masculino', 'Rua Cambara', false, 2300, "Fisioterapia")
-    let instrutor3 = await intrutorModel.save('Maria', 25, 'Feminino', 'Rua Sem Saida', true, 2500, "Pilates")
+    let instrutor3 = await intrutorModel.save('Maria', 25, 'Feminino', 'Rua Sem Saida', true, 2500, "Nutricionista")
     let instrutor4 = await intrutorModel.save('Pedro', 30, 'Masculino', 'Rua Com Saida', true, 3000, "Fortalecimento")
     let instrutor5 = await intrutorModel.save('Joana', 28, 'Feminino', 'Rua das Alamedas', false, 2000, "Emagrecimento")
+    let instrutor6 = await intrutorModel.save('Carla', 20, 'Feminino', 'Rua das Flores', true, 3500, "Nutricionista")
+    let instrutor7 = await intrutorModel.save('Ricardo', 40, 'Masculino', 'Rua Com Buracos', false, 2800, "Musculação")
+    let instrutor8 = await intrutorModel.save('Beatriz', 24, 'Feminino', 'Rua Sem Buracos', true, 4000, "Emagrecimento")
 
-    let instrutores = [instrutor1, instrutor2, instrutor3, instrutor4, instrutor5]
+    let instrutores = [instrutor1, instrutor2, instrutor3, instrutor4, instrutor5, instrutor6, instrutor7, instrutor8]
 
     // Popular tabela aulas
     let aula1 = await aulaModel.save('17/07/2023','08:00',instrutores[0].id)
