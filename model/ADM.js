@@ -38,15 +38,10 @@ module.exports = {
         return adm;
     },
 
-    update: async function(id, obj){
-        let adm = await AdmModel.findByPk(id)
-        if(!adm) {
-            return false
-        }
-
-        Object.keys(id).forEach(key => adm[key] = obh[key])
-        await adm.save()
-        return adm;
+    update: async function(id, nome, idade, cpf, usuario, senha) {
+        return await AdmModel.update({nome: nome, idade: idade, cpf: cpf, usuario: usuario, senha: senha}, {
+            where: { id: id }
+        })
     },
 
     delete: async function(id) {

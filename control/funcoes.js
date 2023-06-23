@@ -1,4 +1,3 @@
-var express = require('express')
 var jwt = require('jsonwebtoken');
 const { token } = require('morgan');
 var admDAO = require("../model/ADM");
@@ -88,7 +87,6 @@ module.exports = {
         }
         next();
     },
-
 // Funções alunos
     validateAluno(req, res, next) {
         const {nome, idade, genero, endereco, altura, peso} = req.body

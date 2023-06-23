@@ -1,7 +1,6 @@
 const express = require('express')
 const router = express.Router()
 const sequelize = require('../helpers/bd')
-
 const ADMModel = require('../model/ADM')
 const usuarioModel = require('../model/usuarios')
 const alunoModel = require('../model/alunos')
@@ -12,7 +11,13 @@ router.get('/', async (req, res) => {
     await sequelize.sync({force: true})
 
     // Popular tabela ADM
-    let adm1 = await ADMModel.save('Guilherme', 26, '222.333.444-55','Alves', '2596')
+    let adm1 = await ADMModel.save('Sofia', 26, '222.333.444-55','sofia', 'sofia')
+    let adm2 = await ADMModel.save('Lucas', 27, '111.222.333-44', 'lucas', 'lucas');
+    let adm3 = await ADMModel.save('Isabella', 28, '444.555.666-77', 'isabella', 'isabella');
+    let adm4 = await ADMModel.save('Gabriel', 29, '777.888.999-00', 'gabriel', 'gabriel');
+    let adm5 = await ADMModel.save('Manuela', 30, '999.888.777-66', 'manuela', 'manuela');
+
+    let adms = [adm1, adm2, adm3, adm4, adm5]
 
     // Popular tabela usuarios
     let user1 = await usuarioModel.save('Joaquim',23,'111.111.111-11','Londrina','joaquim','joaquim')
@@ -70,7 +75,7 @@ router.get('/', async (req, res) => {
 
 
     res.json({status: true, msg: 'Tabelas criadas com sucesso', 
-                            adm1: adm1,
+                            adms: adms,
                             usuarios: usuarios,
                             alunos: alunos,
                             instrutores: instrutores,

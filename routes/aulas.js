@@ -1,11 +1,8 @@
 var express = require('express');
 var router = express.Router();
-var jwt = require('jsonwebtoken');
-const { token } = require('morgan');
-const sequelize = require("../helpers/bd")
 var funcoes = require('../control/funcoes')
 const aulaDAO = require('../model/aulas')
-var admDAO = require("../model/ADM");
+
 
 // Listar aulas disponiveis
 router.get('/listAll', funcoes.validateToken, funcoes.limiteList, async (req, res) => {

@@ -3,7 +3,6 @@ var jwt = require('jsonwebtoken');
 const { token } = require('morgan');
 var admDAO = require("../model/ADM");
 var userDAO = require("../model/usuarios");
-const sequelize = require('../helpers/bd');
 var router = express.Router();
 var funcoes = require('../control/funcoes')
 
@@ -86,6 +85,25 @@ router.post('/cadUsuario', funcoes.validateToken, funcoes.validateUsuario, async
     })
 })
 
+// Alterar dados de ADM
+router.put("/altADM/:id", funcoes.isADM, funcoes.validateADM, async (req, res) => {
+
+    try {
+        const {id} = req.params
+        const {nome, idade, cpf, usuario, senha} = req.body
+   
+        let [result] = await admDAO.update(id, nome, idade, cpf, usuario, senha)
+        console.log(result)
+        if (result)
+            res.json({status: true, msg:'ADM alterado com sucesso'})
+        else
+            res.status(403).json({status: false, msg: 'Falha ao alterar o ADM'})
+    } catch (error) {
+        res.status(500).json({status: false, msg: 'ADM não encontrado'})
+    }
+
+})
+
 
 // Alterar usuarios (apenas adm)
 router.put("/altUsuario/:id", funcoes.isADM, funcoes.validateUsuario, async (req, res) => {
@@ -93,13 +111,7 @@ router.put("/altUsuario/:id", funcoes.isADM, funcoes.validateUsuario, async (req
     try {
         const {id} = req.params
         const {nome, idade, cpf, cidade, usuario, senha} = req.body
-
-        //Verificar se já existe um usuario com esse user
-        const verificaUser = await userDAO.getUserByUsuario(usuario);
-        if (verificaUser) {
-            return res.status(403).json({ status: false, msg: 'Já existe um usuario cadastrado com esse nome de usuário' });
-        }
-    
+   
         let [result] = await userDAO.update(id, nome, idade, cpf, cidade, usuario, senha)
         console.log(result)
         if (result)
