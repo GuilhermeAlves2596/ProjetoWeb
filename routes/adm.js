@@ -32,11 +32,16 @@ router.get('/listUsers', funcoes.isADM, funcoes.limiteList, async (req, res) => 
 // Login ADM 
 router.post('/login', funcoes.validateLogin, async (req, res) => {
     const {user, password} = req.body
+    let adm = true;
+    let isadm = await admDAO.consultaLogin(user, password)
+    
+    if(isadm.length == 0){
+        isadm = await userDAO.consultaLogin(user, password)
+        adm = false;
+    }
 
-    const adm = await admDAO.consultaLogin(user, password)
-
-    if(adm.length > 0){
-        let token = jwt.sign({user: user, password: password}, process.env.DB_TOKEN, {
+    if(isadm.length > 0){
+        let token = jwt.sign({user: user, adm: adm}, process.env.DB_TOKEN, {
             expiresIn: '1h'
         })
         res.json({status: true, token: token, msg:'Login efetuado com sucesso'})

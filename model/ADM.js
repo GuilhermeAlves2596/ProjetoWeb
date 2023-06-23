@@ -73,7 +73,8 @@ module.exports = {
                 where: {
                 usuario: usuario,
                 senha: senha,
-                }
+                },
+                attributes: { exclude: ['cpf', "usuario", "senha"] },
             });
             return adms;
         } catch (error) {

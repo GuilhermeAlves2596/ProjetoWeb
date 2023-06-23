@@ -5,22 +5,6 @@ const { token } = require('morgan');
 var userDAO = require("../model/usuarios");
 var funcoes = require('../control/funcoes')
 
-// Login usuario
-router.post('/login', funcoes.validateLogin, async (req, res) => {
-    const {user, password} = req.body
-
-    const usuario = await userDAO.consultaLogin(user, password)
-
-    if(usuario.length > 0){
-        let token = jwt.sign({user: user, password: password}, process.env.DB_TOKEN, {
-            expiresIn: '1h'
-        })
-        res.json({status: true, token: token, msg:'Login efetuado com sucesso'})
-    } else {
-        res.status(403).json({status: false, msg: 'Usuario/Senha invalidos'})
-    }
-})
-
 // Cadastro de novos usuarios
 router.post('/cadUsuario', funcoes.validateToken, funcoes.validateUsuario, async (req, res) => {
     const {nome, idade, cpf, cidade, usuario, senha} = req.body

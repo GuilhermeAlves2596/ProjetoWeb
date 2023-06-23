@@ -75,13 +75,13 @@ router.get('/imc/:id', funcoes.validateToken, async (req, res) => {
         let peso = aluno.peso;
         let altura = aluno.altura;
         let nome = aluno.nome
-        const calculoIMC = funcoes.calculoIMC(peso,altura);
+        const calculoIMC = parseFloat(funcoes.calculoIMC(peso,altura));
         let profissional;
         let profissional2;
         
         if(calculoIMC < 18.5){
             profissional = await instrutorDAO.getEspecialidade('Nutricionista');
-            return res.json({status: true,nome, idade, altura, peso, IMC:'Seu IMC é: '+calculoIMC+'Kg/m²', 
+            return res.json({status: true,nome, idade, altura, peso, seuIMC: calculoIMC, IMC:'Seu IMC é: '+calculoIMC+'Kg/m²', 
                                 msg: 'Classificação MAGREZA, o aluno deve procurar um de nossos profissionais para definir uma dieta de ganho de peso', 
                                 profissional})
         } else if(18.5 <= calculoIMC && calculoIMC < 24.9) {

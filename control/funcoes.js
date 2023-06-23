@@ -9,8 +9,9 @@ module.exports = {
     
     jwt.verify(token, process.env.DB_TOKEN, async (err, payload) => {
         try {
-            let adm = await admDAO.consultaLogin(payload.user, payload.password)
-            if(adm && adm != ''){
+            let adm = payload.adm
+            console.log(adm)
+            if(adm == true){
                 next();
             } else {
             res.status(403)
