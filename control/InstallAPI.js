@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
     await sequelize.sync({force: true})
 
     // Popular tabela ADM
-    let adm1 = await ADMModel.save('Guilherme', 26, '068.400.089-08','Alves', '2596')
+    let adm1 = await ADMModel.save('Guilherme', 26, '222.333.444-55','Alves', '2596')
 
     // Popular tabela usuarios
     let user1 = await usuarioModel.save('Joaquim',23,'111.111.111-11','Londrina','joaquim','joaquim')

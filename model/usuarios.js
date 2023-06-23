@@ -70,6 +70,20 @@ module.exports = {
         }
     },
 
+    getUserByUsuario: async function (usuario) {
+        try {
+            const users = await userModel.findAll({
+                where: {
+                usuario: usuario,
+                },
+            });
+        return users.length > 0 ? users[0] : null;
+        } catch (error) {
+        console.error('Erro ao buscar por usuário', error);
+        throw error;
+        }
+    },
+
     Model: userModel,
 }
 

@@ -6,6 +6,7 @@ const sequelize = require("../helpers/bd")
 var funcoes = require('../control/funcoes')
 const alunosDAO = require('../model/alunos')
 const instrutorDAO = require('../model/instrutores')
+const aulaDAO = require('../model/aulas')
 
 // Listar alunos cadastrados
 router.get('/listAll', funcoes.validateToken, funcoes.limiteList, async (req, res) => {
@@ -84,23 +85,23 @@ router.get('/imc/:id', funcoes.validateToken, async (req, res) => {
         if(calculoIMC < 18.5){
             profissional = await instrutorDAO.getEspecialidade('Nutricionista');
             return res.json({status: true,nome, idade, altura, peso, IMC:'Seu IMC é: '+calculoIMC+'Kg/m²', 
-                                msg: 'Classificação MAGREZA, procure um de nossos profissionais para definir uma dieta de ganho de peso', 
+                                msg: 'Classificação MAGREZA, o aluno deve procurar um de nossos profissionais para definir uma dieta de ganho de peso', 
                                 profissional})
         } else if(18.5 <= calculoIMC && calculoIMC < 24.9) {
             profissional = await instrutorDAO.getEspecialidade('Musculação');
             return res.json({status: true,nome, idade, altura, peso, IMC:'Seu IMC é: '+calculoIMC+'Kg/m²', 
-                                msg: 'Classificação NORMAL, parabens, seu peso está normal, caso queira ganhar massa, aqui estão alguns de nossos profissionais especializados', 
+                                msg: 'Classificação NORMAL, o aluno esta com seu peso normal, caso queira ganhar massa, aqui estão alguns de nossos profissionais especializados', 
                                 profissional})        
         } else if(24.9 <= calculoIMC && calculoIMC <= 29.9){
             profissional = await instrutorDAO.getEspecialidade('Emagrecimento');
             return res.json({status: true,nome, idade, altura, peso, IMC:'Seu IMC é: '+calculoIMC+'Kg/m²', 
-                                msg: 'Classificação SOBREPESO, cuidado, seu peso está acima do normal, procure um profissional para definir rotinas de emagrecimento', 
+                                msg: 'Classificação SOBREPESO, atenção, o aluno está com seu peso acima do normal, deve procurar um profissional para definir rotinas de emagrecimento', 
                                 profissional})          
         } else if(calculoIMC >= 30){
             profissional = await instrutorDAO.getEspecialidade('Emagrecimento');
             profissional2 = await instrutorDAO.getEspecialidade('Nutricionista');
             return res.json({status: true,nome, idade, altura, peso, IMC:'Seu IMC é: '+calculoIMC+'Kg/m²', 
-                                msg: 'Classificação OBESIDADE GRAU I, muito cuidado, seu peso está muito acima do normal, procure um profissional para definir rotinas de emagrecimento e um nutricionista', 
+                                msg: 'Classificação OBESIDADE GRAU I, muita atenção, o aluno esta com o peso muito acima do normal, deve procurar um profissional para definir rotinas de emagrecimento e um nutricionista', 
                                 profissional, profissional2})          
         }        
     } catch (error) {
@@ -108,6 +109,5 @@ router.get('/imc/:id', funcoes.validateToken, async (req, res) => {
     }
 
 })
-
 
 module.exports = router;

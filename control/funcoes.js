@@ -1,14 +1,35 @@
 var express = require('express')
 var jwt = require('jsonwebtoken');
 const { token } = require('morgan');
+var admDAO = require("../model/ADM");
 
 
 module.exports = {
+  isADM(req, res, next) {
+    let token = req.headers.authorization;
+    
+    jwt.verify(token, process.env.DB_TOKEN, async (err, payload) => {
+        try {
+            let adm = await admDAO.consultaLogin(payload.user, payload.password)
+            if(adm && adm != ''){
+                next();
+            } else {
+            res.status(403)
+            .json({ status: false, msg: "Acesso negado - Voce não possui acesso adm" });
+            }
+        } catch (error) {
+            res.status(403)
+            .json({ status: false, msg: "Acesso negado - Token invalido" });
+        }
+
+    });
+  },
+
   validateToken(req, res, next) {
     let token_full = req.headers["authorization"];
     if (!token_full) token_full = "";
 
-    jwt.verify(token_full, "#Abcdefg", (err, payload) => {
+    jwt.verify(token_full, process.env.DB_TOKEN, (err, payload) => {
       if (err) {
         res
           .status(403)
@@ -31,7 +52,8 @@ module.exports = {
     }
     next();
   },
-   // Verificar se o limite está entre os valores permitidos
+
+// Verificar se o limite está entre os valores permitidos
   limiteList(req, res, next){
     let limit = parseInt(req.query.limit);
 
@@ -67,17 +89,6 @@ module.exports = {
         next();
     },
 
-    validateAltUser(req, res, next) {
-        const {user} = req.body
-    
-        if(!user){
-            res
-            .status(403)
-            .json({ status: false, msg: "Digite o seu usuario" });
-            return;
-        }
-        next();
-      },
 // Funções alunos
     validateAluno(req, res, next) {
         const {nome, idade, genero, endereco, altura, peso} = req.body

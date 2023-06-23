@@ -19,7 +19,7 @@ aulaModel.belongsTo(instrutor.Model, {
     foreignKey: 'nome',
     as: 'instrutor'
 })
-instrutor.Model.hasMany(aulaModel, {foreignKey: 'nome', as: 'aulas'})
+instrutor.Model.hasMany(aulaModel, {foreignKey: 'nome'})
 
 
 module.exports = {
@@ -85,7 +85,6 @@ module.exports = {
 
         return aula;
     },
-
 
     Model: aulaModel
 }

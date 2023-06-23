@@ -58,12 +58,26 @@ module.exports = {
         return await AdmModel.findByPk(id);
     },
 
+    getAdmByUsuario: async function (usuario) {
+        try {
+            const adms = await AdmModel.findAll({
+                where: {
+                usuario: usuario,
+                },
+            });
+        return adms.length > 0 ? adms[0] : null;
+        } catch (error) {
+        console.error('Erro ao buscar administrador por usuário', error);
+        throw error;
+        }
+    },
+
     consultaLogin: async function(usuario, senha) {
         try {
             const adms = await AdmModel.findAll({
                 where: {
                 usuario: usuario,
-                senha: senha
+                senha: senha,
                 }
             });
             return adms;

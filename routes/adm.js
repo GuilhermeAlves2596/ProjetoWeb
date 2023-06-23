@@ -8,36 +8,25 @@ var router = express.Router();
 var funcoes = require('../control/funcoes')
 
 // Listar ADM's
-router.get('/listAll', funcoes.validateToken, funcoes.validateLogin, funcoes.limiteList, async (req, res) => {
-    const {user, password} = req.body
-    const adm = await admDAO.consultaLogin(user, password)
+router.get('/listAll', funcoes.isADM, funcoes.limiteList, async (req, res) => {
+    
+    const page = parseInt(req.query.page);
+    let limit = parseInt(req.query.limit);
 
-    if(adm.length > 0){
-        const page = parseInt(req.query.page);
-        let limit = parseInt(req.query.limit);
-
-        const adms = await admDAO.list(page, limit);
-        res.json({status: true, msg: "ADM's cadastrados", adms })
-    } else {
-        res.status(403).json({status: false, msg: 'Você não possui acesso ADM'})
-    }
+    const adms = await admDAO.list(page, limit);
+    res.json({status: true, msg: "ADM's cadastrados", adms })
 
 })
 
 // Listar usuarios
-router.get('/listUsers', funcoes.validateToken, funcoes.validateLogin, funcoes.limiteList, async (req, res) => {
-    const { user, password } = req.body;
-    const adm = await admDAO.consultaLogin(user, password);
+router.get('/listUsers', funcoes.isADM, funcoes.limiteList, async (req, res) => {
 
-    if (adm.length > 0) {
-        const page = parseInt(req.query.page);
-        let limit = parseInt(req.query.limit);
+    const page = parseInt(req.query.page);
+    let limit = parseInt(req.query.limit);
 
-        const users = await userDAO.list(page, limit);
-        res.json({ status: true, msg: "Usuários cadastrados", users });
-    } else {
-        res.status(403).json({ status: false, msg: 'Você não possui acesso ADM' });
-    }
+    const users = await userDAO.list(page, limit);
+    res.json({ status: true, msg: "Usuários cadastrados", users });
+
 });
 
 
@@ -48,7 +37,7 @@ router.post('/login', funcoes.validateLogin, async (req, res) => {
     const adm = await admDAO.consultaLogin(user, password)
 
     if(adm.length > 0){
-        let token = jwt.sign({user: user}, '#Abcdefg', {
+        let token = jwt.sign({user: user, password: password}, process.env.DB_TOKEN, {
             expiresIn: '1h'
         })
         res.json({status: true, token: token, msg:'Login efetuado com sucesso'})
@@ -58,33 +47,36 @@ router.post('/login', funcoes.validateLogin, async (req, res) => {
 })
 
 // Cadastro de novos ADM's
-router.post('/cadAdm', funcoes.validateToken, funcoes.validateLogin, funcoes.validateADM, async(req, res) => {
-
-    const {user, password} = req.body
-
-    const adm = await admDAO.consultaLogin(user, password)
-    if(adm.length > 0){
-        await sequelize.sync()
-        const {nome, idade, cpf, usuario, senha} = req.body
-
-        admDAO.save(nome, idade, cpf, usuario, senha).then(adm => {
-            res.json({status: true, msg:'Administrador cadastrado com sucesso'})
-        }).catch(err => {
-            console.log(err)
-            res.status(500).json({status: false, msg: 'Não foi possivel cadastrar o administrador'})
-        })
-    } else {
-        res.status(403).json({status: false, msg: 'Você não possui acesso ADM'})
+router.post('/cadAdm', funcoes.isADM, funcoes.validateADM, async (req, res) => {
+    const { nome, idade, cpf, usuario, senha } = req.body;
+  
+    // Verificar se já existe um administrador cadastrado no banco de dados
+    const verificaUser = await admDAO.getAdmByUsuario(usuario);
+    if (verificaUser) {
+      return res.status(403).json({ status: false, msg: 'Já existe um administrador cadastrado com esse usuário' });
     }
-
-})
+  
+    admDAO
+      .save(nome, idade, cpf, usuario, senha)
+      .then((adm) => {
+        res.json({ status: true, msg: 'Administrador cadastrado com sucesso' });
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json({ status: false, msg: 'Não foi possível cadastrar o administrador' });
+      });
+  });
+  
 
 
 // Cadastro de novos usuarios
 router.post('/cadUsuario', funcoes.validateToken, funcoes.validateUsuario, async (req, res) => {
-    await sequelize.sync()
-
     const {nome, idade, cpf, cidade, usuario, senha} = req.body
+
+    const verificaUser = await userDAO.getUserByUsuario(usuario);
+    if (verificaUser) {
+        return res.status(403).json({ status: false, msg: 'Já existe um usuario cadastrado com esse nome de usuário' });
+    }
 
     userDAO.save(nome, idade, cpf, cidade, usuario, senha).then(user => {
         res.json({status: true, msg:'Usuario cadastrado com sucesso'})
@@ -96,25 +88,24 @@ router.post('/cadUsuario', funcoes.validateToken, funcoes.validateUsuario, async
 
 
 // Alterar usuarios (apenas adm)
-router.put("/altUsuario/:id", funcoes.validateToken, funcoes.validateUsuario, funcoes.validateLogin, async (req, res) => {
-
-    const {user, password} = req.body
-    const adm = await admDAO.consultaLogin(user, password)
+router.put("/altUsuario/:id", funcoes.isADM, funcoes.validateUsuario, async (req, res) => {
 
     try {
-        if(adm.length > 0){
-            const {id} = req.params
-            const {nome, idade, cpf, cidade, usuario, senha} = req.body
-        
-            let [result] = await userDAO.update(id, nome, idade, cpf, cidade, usuario, senha)
-            console.log(result)
-            if (result)
-                res.json({status: true, msg:'Usuario alterado com sucesso'})
-            else
-                res.status(403).json({status: false, msg: 'Falha ao alterar o usuario'})
-        } else {
-            res.status(500).json({status: false, msg: 'Você não possui acesso ADM'})
+        const {id} = req.params
+        const {nome, idade, cpf, cidade, usuario, senha} = req.body
+
+        //Verificar se já existe um usuario com esse user
+        const verificaUser = await userDAO.getUserByUsuario(usuario);
+        if (verificaUser) {
+            return res.status(403).json({ status: false, msg: 'Já existe um usuario cadastrado com esse nome de usuário' });
         }
+    
+        let [result] = await userDAO.update(id, nome, idade, cpf, cidade, usuario, senha)
+        console.log(result)
+        if (result)
+            res.json({status: true, msg:'Usuario alterado com sucesso'})
+        else
+            res.status(403).json({status: false, msg: 'Falha ao alterar o usuario'})
     } catch (error) {
         res.status(500).json({status: false, msg: 'Usuário não encontrado'})
     }
@@ -122,22 +113,15 @@ router.put("/altUsuario/:id", funcoes.validateToken, funcoes.validateUsuario, fu
 })
 
 // Exclusão de usuario não ADM
-router.delete("/deleteUser/:id", funcoes.validateToken, funcoes.validateLogin, async (req, res) => {
-
-    const {user, password} = req.body
-    const adm = await admDAO.consultaLogin(user, password)
+router.delete("/deleteUser/:id", funcoes.isADM, async (req, res) => {
 
     try {
-        if(adm.length > 0){
-            let usuario = await userDAO.delete(req.params.id)
-            if(usuario){
-                res.json({status: true, msg:'Usuário excluido com sucesso'})
-            } else {
-                res.status(403).json({status: false, msg: 'Erro ao excluir o usuário'})
-            }
+        let usuario = await userDAO.delete(req.params.id)
+        if(usuario){
+            res.json({status: true, msg:'Usuário excluido com sucesso'})
         } else {
-            res.status(500).json({status: false, msg: 'Você não possui acesso ADM'})
-        }       
+            res.status(403).json({status: false, msg: 'Erro ao excluir o usuário'})
+        }
     } catch (error) {
         res.status(500).json({status: false, msg: 'Usuário não encontrado'})
     }
